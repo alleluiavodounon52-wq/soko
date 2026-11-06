@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soko - Plateforme de Vente</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.inp{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:10px}
+.btn-green{width:100%;background:#00a859;color:#fff;border:none;padding:14px;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer}
+.link{background:none;border:none;color:var(--primary);font-size:13px;font-weight:600;cursor:pointer;margin-top:10px;width:100%;text-align:center;text-decoration:none;display:block}
+.row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);font-size:14px}
+.muted{font-size:12px;color:var(--text-muted)}
+.test{background:#fff7e0;color:#8a5a00;padding:8px 12px;font-size:12px;text-align:center;font-weight:600}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="test">MODE TEST : aucun vrai argent n'est échangé</div>
+<header class="header"><div class="logo">S soko</div><div class="store-name" id="title"></div></header>
+
+<main class="main-content">
+  <!-- Connexion / inscription -->
+  <div id="vAuth" class="app-view hidden"><section class="card">
+    <h2 class="chart-title" id="aTitle" style="margin-bottom:12px">Connexion</h2>
+    <form id="authForm">
+      <input class="inp" id="aShop" placeholder="Nom de ta boutique" minlength="2" maxlength="60">
+      <input class="inp" id="aEmail" type="email" placeholder="Email" required>
+      <input class="inp" id="aPass" type="password" placeholder="Mot de passe (6 caractères min.)" minlength="6" required>
+      <button class="btn-primary" id="aBtn">Se connecter</button>
+    </form>
+    <button class="link" id="aSwitch"></button>
+  </section></div>
+
+  <!-- Tableau de bord -->
+  <div id="vDash" class="app-view hidden">
+    <section class="card">
+      <span class="card-label">Solde disponible</span>
+      <div class="balance" id="balance">0 FCFA</div>
+      <form id="wForm">
+        <input class="inp" id="wAmt" type="number" min="1" placeholder="Montant à retirer (FCFA)" required>
+        <input class="inp" id="wPhone" type="tel" placeholder="Numéro Mobile Money" required>
+        <button class="btn-primary">Demander un retrait</button>
+      </form>
+      <div id="wList" style="margin-top:10px"></div>
+    </section>
+    <section class="stats-grid">
+      <div class="stat-card"><div class="stat-value" id="sales">0</div><div class="stat-label">Ventes ce mois</div></div>
+      <div class="stat-card"><div class="stat-value" id="prods">0</div><div class="stat-label">Produits en ligne</div></div>
+    </section>
+    <section class="card">
+      <h2 class="chart-title" style="margin-bottom:12px">Ajouter un produit</h2>
+      <form id="pForm">
+        <input class="inp" id="pName" placeholder="Nom du produit" maxlength="100" required>
+        <input class="inp" id="pPrice" type="number" min="100" placeholder="Prix en FCFA (100 minimum)" required>
+        <input class="inp" id="pUrl" type="url" placeholder="Lien du produit (Drive, Dropbox...)" required>
+        <button class="btn-primary">Publier le produit</button>
+      </form>
+    </section>
+  </div>
+
+  <!-- Ma boutique -->
+  <div id="vStore" class="app-view hidden">
+    <section class="card">
+      <h2 class="chart-title" style="margin-bottom:6px">Lien de ta boutique</h2>
+      <p class="muted" style="margin-bottom:10px">Partage ce lien à tes clients.</p>
+      <input class="inp" id="shopLink" readonly>
+      <button class="btn-primary" id="copy">Copier le lien</button>
+      <a class="link" id="open" target="_blank" rel="noopener">Ouvrir ma boutique</a>
+    </section>
+    <section class="card">
+      <h2 class="chart-title" style="margin-bottom:6px">Mes produits</h2>
+      <div id="sList"></div>
+    </section>
+  </div>
+
+  <!-- Page client -->
+  <div id="vShop" class="app-view hidden">
+    <section class="card">
+      <h1 style="font-size:20px;margin-bottom:6px" id="bTitle"></h1>
+      <p class="muted" style="margin-bottom:6px">Paiement par Mobile Money (simulé pendant le test).</p>
+      <div id="bList"></div>
+    </section>
+    <section class="card hidden" id="buyBox">
+      <h2 class="chart-title" id="bName" style="margin-bottom:15px"></h2>
+      <form id="buyForm">
+        <label class="muted">Nom complet</label>
+        <input class="inp" id="bFull" placeholder="Ex: Jean Dossou" required>
+        <label class="muted">Numéro Mobile Money (MTN/Moov/Celtiis)</label>
+        <input class="inp" id="bTel" type="tel" placeholder="Ex: 97 00 00 00" required>
+        <button class="btn-green" id="payBtn"></button>
+      </form>
+    </section>
+    <section class="card hidden" id="done">
+      <h2 class="chart-title" style="margin-bottom:8px">Paiement validé (test)</h2>
+      <a class="btn-primary" id="doneLink" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">Accéder à mon produit</a>
+    </section>
+  </div>
+</main>
+
+<nav class="bottom-nav hidden" id="nav">
+  <a href="#" class="nav-item active" data-v="dash"><span>📊 Accueil</span></a>
+  <a href="#" class="nav-item" data-v="store"><span>🛍️ Boutique</span></a>
+  <a href="#" class="nav-item" id="logout"><span>🚪 Quitter</span></a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// 1. Colle ici l'URL et la clé "anon public" de ton projet Supabase
+const SUPABASE_URL = 'https://zgcaxwealxoabsuwcwku.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_ToCuNJxIPvdM3lztkAMMIg_M_Lhz2ds';
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fcfa = n => Number(n).toLocaleString('fr-FR') + ' FCFA';
+const day = d => new Date(d).toLocaleDateString('fr-FR');
+const fail = e => alert('Erreur : ' + (e.message || e));
+const show = id => { document.querySelectorAll('.app-view').forEach(v => v.classList.add('hidden')); $(id).classList.remove('hidden'); };
+let shop = null, signup = false, cart = null;
+
+async function init() {
+  const slug = new URLSearchParams(location.search).get('b');
+  if (slug) return loadBuyer(slug);
+  const { data: { session } } = await db.auth.getSession();
+  session ? loadApp() : showAuth();
+}
+
+/* ---------- Connexion ---------- */
+function setMode(s) {
+  signup = s;
+  $('aShop').classList.toggle('hidden', !s); $('aShop').required = s;
+  $('aTitle').textContent = s ? 'Créer ma boutique' : 'Connexion';
+  $('aBtn').textContent = s ? 'Créer mon compte' : 'Se connecter';
+  $('aSwitch').textContent = s ? "J'ai déjà un compte" : 'Pas de compte ? Créer ma boutique';
+}
+function showAuth() { show('vAuth'); setMode(false); $('title').textContent = ''; $('nav').classList.add('hidden'); }
+$('aSwitch').onclick = () => setMode(!signup);
+
+$('authForm').onsubmit = async e => {
+  e.preventDefault();
+  const email = $('aEmail').value.trim(), password = $('aPass').value;
+  try {
+    if (signup) {
+      const { data, error } = await db.auth.signUp({ email, password }); if (error) throw error;
+      if (!data.session) return alert('Compte créé. Confirme ton email, puis connecte-toi.');
+      const r = await db.rpc('create_shop', { p_name: $('aShop').value }); if (r.error) throw r.error;
+    } else {
+      const { error } = await db.auth.signInWithPassword({ email, password }); if (error) throw error;
+    }
+    loadApp();
+  } catch (err) { fail(err); }
+};
+
+$('logout').onclick = async e => { e.preventDefault(); await db.auth.signOut(); shop = null; showAuth(); };
+
+/* ---------- Espace vendeur ---------- */
+async function loadApp() {
+  const { data, error } = await db.from('shops').select('*').maybeSingle();
+  if (error) return fail(error);
+  shop = data;
+  if (!shop) {
+    const n = prompt('Nom de ta boutique ?');
+    if (!n) { await db.auth.signOut(); return showAuth(); }
+    const r = await db.rpc('create_shop', { p_name: n });
+    if (r.error) return fail(r.error);
+    return loadApp();
+  }
+  $('nav').classList.remove('hidden');
+  go('dash');
+}
+
+document.querySelectorAll('.nav-item[data-v]').forEach(a => a.onclick = e => { e.preventDefault(); go(a.dataset.v); });
+
+async function go(v) {
+  document.querySelectorAll('.nav-item[data-v]').forEach(n => n.classList.toggle('active', n.dataset.v === v));
+  if (v === 'dash') { show('vDash'); $('title').textContent = shop.name; await refreshDash(); }
+  else { show('vStore'); $('title').textContent = 'Ma boutique'; await refreshStore(); }
+}
+
+async function refreshDash() {
+  const m = new Date(); m.setDate(1); m.setHours(0, 0, 0, 0);
+  const [s, o, p, w] = await Promise.all([
+    db.from('shops').select('balance').maybeSingle(),
+    db.from('orders').select('id', { count: 'exact', head: true }).gte('created_at', m.toISOString()),
+    db.from('products').select('id', { count: 'exact', head: true }),
+    db.from('withdrawals').select('*').order('created_at', { ascending: false }).limit(5)
+  ]);
+  $('balance').textContent = fcfa(s.data ? s.data.balance : 0);
+  $('sales').textContent = o.count || 0;
+  $('prods').textContent = p.count || 0;
+  $('wList').innerHTML = (w.data || []).map(x =>
+    `<div class="row"><div>${fcfa(x.amount)}<div class="muted">${day(x.created_at)} · ${esc(x.phone)}</div></div><span class="muted">En attente (test)</span></div>`
+  ).join('') || '<p class="muted">Aucune demande de retrait.</p>';
+}
+
+$('wForm').onsubmit = async e => {
+  e.preventDefault();
+  const r = await db.rpc('request_withdrawal', { p_amount: Number($('wAmt').value), p_phone: $('wPhone').value });
+  if (r.error) return fail(r.error);
+  e.target.reset(); alert('Demande enregistrée. En mode test, aucun vrai transfert n\'est fait.'); refreshDash();
+};
+
+$('pForm').onsubmit = async e => {
+  e.preventDefault();
+  const r = await db.rpc('add_product', { p_name: $('pName').value, p_price: Number($('pPrice').value), p_url: $('pUrl').value });
+  if (r.error) return fail(r.error);
+  e.target.reset(); alert('Produit publié !'); go('store');
+};
+
+async function refreshStore() {
+  const link = location.origin + location.pathname + '?b=' + shop.slug;
+  $('shopLink').value = link; $('open').href = link;
+  const { data } = await db.from('products').select('*').order('created_at', { ascending: false });
+  $('sList').innerHTML = (data || []).map(p =>
+    `<div class="row"><div><b>${esc(p.name)}</b><div class="muted">${day(p.created_at)}</div></div><b style="color:var(--primary)">${fcfa(p.price)}</b></div>`
+  ).join('') || '<p class="muted" style="text-align:center;padding:20px 0">Aucun produit pour l\'instant.</p>';
+}
+$('copy').onclick = () => { $('shopLink').select(); if (navigator.clipboard) navigator.clipboard.writeText($('shopLink').value); alert('Lien copié'); };
+
+/* ---------- Page client ---------- */
+async function loadBuyer(slug) {
+  show('vShop');
+  const { data, error } = await db.rpc('get_shop', { p_slug: slug });
+  if (error || !data) { $('bTitle').textContent = 'Boutique introuvable'; return; }
+  $('title').textContent = data.name; $('bTitle').textContent = data.name;
+  $('bList').innerHTML = data.products.map(p =>
+    `<div class="row"><b>${esc(p.name)}</b><div><b style="color:var(--primary)">${fcfa(p.price)}</b>
+     <button class="link" style="display:inline;width:auto;margin:0 0 0 8px" data-id="${esc(p.id)}" data-n="${esc(p.name)}" data-p="${Number(p.price)}">Acheter</button></div></div>`
+  ).join('') || '<p class="muted">Aucun produit pour l\'instant.</p>';
+  $('bList').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    cart = { id: b.dataset.id, price: Number(b.dataset.p) };
+    $('bName').textContent = b.dataset.n; $('payBtn').textContent = 'Payer ' + fcfa(cart.price);
+    $('done').classList.add('hidden'); $('buyBox').classList.remove('hidden'); $('buyBox').scrollIntoView();
+  };
+}
+
+$('buyForm').onsubmit = async e => {
+  e.preventDefault();
+  const { data, error } = await db.rpc('simulate_purchase', { p_product: cart.id, p_name: $('bFull').value, p_phone: $('bTel').value });
+  if (error) return fail(error);
+  e.target.reset(); $('buyBox').classList.add('hidden');
+  $('doneLink').href = data; $('done').classList.remove('hidden');
+};
+
+init();
+</script>
+</body>
+</html>
